@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Ethics & Governance – Idea Board v5</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --health:#F472B6; --education:#22D3EE; --agric:#34D399;
+    --econ:#FCD34D; --other:#FB923C;
+    --bg:#ffffff; --surface:#F8FAFC; --border:#E2E8F0;
+    --text:#0F172A; --muted:#64748B; --blue:#1D4ED8; --blue-dark:#1E3A8A;
+  }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* HEADER */
+  header { background:var(--blue-dark); color:#fff; padding:16px 20px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .header-left {}
+  .header-badge { background:rgba(255,255,255,.15); border-radius:6px; padding:5px 9px; font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; white-space:nowrap; display:inline-block; margin-bottom:5px; }
+  header h1 { font-size:16px; font-weight:700; line-height:1.3; }
+  header p  { font-size:11px; opacity:.65; margin-top:2px; }
+  .version-tag { background:#22D3EE; color:#0F172A; border-radius:6px; padding:4px 9px; font-size:11px; font-weight:800; white-space:nowrap; align-self:flex-start; margin-top:2px; }
+
+  /* TABS */
+  .tabs { display:flex; border-bottom:2px solid var(--border); background:var(--bg); position:sticky; top:0; z-index:50; }
+  .tab { flex:1; padding:13px 6px; text-align:center; font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; transition:color .2s,border-color .2s; user-select:none; }
+  .tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+
+  /* REGISTER */
+  #screen-register { max-width:460px; margin:32px auto; padding:20px; }
+  .reg-title { font-size:21px; font-weight:800; margin-bottom:4px; }
+  .reg-sub   { font-size:13px; color:var(--muted); margin-bottom:24px; line-height:1.5; }
+  label { display:block; font-size:12px; font-weight:700; margin-bottom:6px; color:var(--text); letter-spacing:.03em; }
+  input[type=text] { width:100%; border:1.5px solid var(--border); border-radius:8px; padding:11px 14px; font-size:15px; font-family:inherit; outline:none; transition:border-color .2s; margin-bottom:20px; }
+  input[type=text]:focus { border-color:var(--blue); }
+  .sector-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:24px; }
+  .sector-btn { border:2px solid var(--border); border-radius:10px; padding:13px 10px; text-align:center; cursor:pointer; font-size:13px; font-weight:700; transition:transform .15s,box-shadow .15s,border-color .15s; background:var(--surface); }
+  .sector-btn:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.1); }
+  .sector-btn.selected { border-color:#0F172A; box-shadow:0 0 0 3px rgba(15,23,42,.12); }
+  .sector-btn .dot { width:26px; height:26px; border-radius:50%; margin:0 auto 7px; }
+  .sector-btn[data-sector=health]    .dot { background:var(--health); }
+  .sector-btn[data-sector=education] .dot { background:var(--education); }
+  .sector-btn[data-sector=agric]     .dot { background:var(--agric); }
+  .sector-btn[data-sector=econ]      .dot { background:var(--econ); }
+  .sector-btn[data-sector=other]     .dot { background:var(--other); }
+  .btn-primary { width:100%; background:var(--blue); color:#fff; border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; transition:background .2s; }
+  .btn-primary:hover { background:var(--blue-dark); }
+  .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+  .section-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; margin-bottom:9px; }
+
+  /* SUBMIT */
+  #screen-submit { max-width:540px; margin:0 auto; padding:20px; }
+  .user-chip { display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1.5px solid var(--border); border-radius:999px; padding:5px 13px; font-size:12px; font-weight:600; margin-bottom:20px; cursor:pointer; }
+  .user-chip .dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+
+  .topic-select { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+  .topic-btn { border:1.5px solid var(--border); border-radius:8px; padding:10px 11px; font-size:12px; font-weight:600; cursor:pointer; background:var(--bg); color:var(--muted); transition:all .15s; text-align:left; font-family:inherit; line-height:1.3; }
+  .topic-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .topic-btn.selected { background:var(--blue-dark); color:#fff; border-color:var(--blue-dark); }
+
+  /* TOPIC CONTEXT CARD */
+  .topic-context { background:#EFF6FF; border:1.5px solid #BFDBFE; border-radius:12px; padding:16px 18px; margin-bottom:18px; display:none; }
+  .tc-eyebrow  { font-size:10px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+  .tc-heading  { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; }
+  .tc-num      { font-size:28px; font-weight:900; color:#22D3EE; line-height:1; }
+  .tc-title    { font-size:15px; font-weight:800; color:var(--blue-dark); line-height:1.3; }
+  .tc-divider  { border:none; border-top:1.5px solid #BFDBFE; margin:0 0 12px; }
+  .tc-q-label  { font-size:10px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:.07em; margin-bottom:6px; }
+  .tc-question { font-size:13px; font-weight:600; color:#1e3a8a; font-style:italic; line-height:1.55; margin-bottom:14px; border-left:3px solid var(--blue); padding-left:10px; }
+  .tc-probe-label { font-size:10px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:.07em; margin-bottom:7px; }
+  .tc-probes   { list-style:none; display:flex; flex-direction:column; gap:5px; }
+  .tc-probes li { font-size:11.5px; color:#1e40af; line-height:1.45; padding-left:14px; position:relative; }
+  .tc-probes li::before { content:'–'; position:absolute; left:0; color:var(--blue); font-weight:700; }
+
+  textarea { width:100%; border:1.5px solid var(--border); border-radius:8px; padding:11px 13px; font-size:14px; font-family:inherit; resize:vertical; min-height:96px; outline:none; transition:border-color .2s; margin-bottom:10px; }
+  textarea:focus { border-color:var(--blue); }
+  .char-count { font-size:11px; color:var(--muted); text-align:right; margin-bottom:14px; }
+
+  /* BOARD */
+  #screen-board { padding:18px 14px; }
+  .board-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .board-header h2 { font-size:16px; font-weight:800; }
+  .live-badge { display:flex; align-items:center; gap:5px; background:#DCFCE7; color:#166534; border-radius:999px; padding:4px 10px; font-size:11px; font-weight:700; }
+  .live-dot { width:8px; height:8px; border-radius:50%; background:#22C55E; animation:pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+  .legend { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--muted); }
+  .legend-dot { width:9px; height:9px; border-radius:50%; }
+  .filter-bar { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; }
+  .filter-chip { border:1.5px solid var(--border); border-radius:999px; padding:4px 11px; font-size:11px; font-weight:700; cursor:pointer; background:var(--bg); color:var(--muted); transition:all .15s; display:flex; align-items:center; gap:5px; font-family:inherit; }
+  .filter-chip.active { background:var(--blue-dark); color:#fff; border-color:var(--blue-dark); }
+  .filter-chip .cdot { width:8px; height:8px; border-radius:50%; }
+  .ideas-count { font-size:12px; color:var(--muted); margin-bottom:12px; }
+  .ideas-count span { font-weight:700; color:var(--text); }
+  .board-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .topic-col { background:var(--surface); border-radius:12px; border:1.5px solid var(--border); overflow:hidden; }
+  .topic-col-header { padding:11px 15px; font-size:13px; font-weight:700; background:var(--blue-dark); color:#fff; }
+  .topic-col-body { padding:11px; min-height:110px; display:flex; flex-direction:column; gap:9px; }
+  .empty-col { font-size:12px; color:var(--muted); text-align:center; padding:18px 0; font-style:italic; }
+  .sticky { border-radius:8px; padding:11px 13px; font-size:13px; font-weight:500; color:#1a1a1a; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.11); transition:transform .15s,box-shadow .15s; line-height:1.45; word-break:break-word; }
+  .sticky:hover { transform:rotate(-1deg) scale(1.02); box-shadow:0 6px 16px rgba(0,0,0,.17); }
+  .sticky .sticky-meta { font-size:10px; font-weight:700; opacity:.6; margin-top:6px; text-transform:uppercase; letter-spacing:.04em; }
+  .sticky[data-sector=health]    { background:#FDF2F8; border-left:4px solid var(--health); }
+  .sticky[data-sector=education] { background:#ECFEFF; border-left:4px solid var(--education); }
+  .sticky[data-sector=agric]     { background:#ECFDF5; border-left:4px solid var(--agric); }
+  .sticky[data-sector=econ]      { background:#FFFBEB; border-left:4px solid var(--econ); }
+  .sticky[data-sector=other]     { background:#FFF7ED; border-left:4px solid var(--other); }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.58); z-index:200; align-items:center; justify-content:center; padding:16px; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--bg); border-radius:16px; max-width:420px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,.28); animation:pop .2s ease; overflow:hidden; max-height:90vh; overflow-y:auto; }
+  @keyframes pop { from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1} }
+  .modal-station { background:var(--blue-dark); color:#fff; padding:20px 22px 18px; }
+  .modal-st-eyebrow { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; opacity:.6; margin-bottom:6px; }
+  .modal-st-row { display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
+  .modal-st-num   { font-size:30px; font-weight:900; color:#22D3EE; line-height:1; flex-shrink:0; }
+  .modal-st-title { font-size:17px; font-weight:800; line-height:1.3; }
+  .modal-st-divider { border:none; border-top:1px solid rgba(255,255,255,.2); margin:0 0 12px; }
+  .modal-st-q { font-size:12px; font-style:italic; line-height:1.55; opacity:.9; }
+  .modal-idea { padding:18px 22px 22px; }
+  .modal-sector-pill { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:4px 12px; font-size:11px; font-weight:700; margin-bottom:12px; }
+  .modal-sector-pill .dot { width:10px; height:10px; border-radius:50%; }
+  .modal-author { font-size:15px; font-weight:800; margin-bottom:10px; }
+  .modal-idea-text { font-size:14px; line-height:1.65; color:var(--text); background:var(--surface); border-radius:8px; padding:14px 16px; margin-bottom:12px; border-left:4px solid var(--blue); }
+  .modal-time { font-size:11px; color:var(--muted); margin-bottom:18px; }
+  .modal-close { display:block; width:100%; padding:11px; border:1.5px solid var(--border); border-radius:8px; background:var(--bg); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; color:var(--text); }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#0F172A; color:#fff; padding:11px 20px; border-radius:999px; font-size:13px; font-weight:600; z-index:300; transition:transform .3s; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-badge">Live Session</div>
+    <h1>AI Ethics &amp; Governance Dialogue</h1>
+    <p>Add your ideas to the shared board</p>
+  </div>
+  <div class="version-tag">v5</div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('register')" id="tab-register">My Profile</div>
+  <div class="tab"        onclick="switchTab('submit')"   id="tab-submit">Add Idea</div>
+  <div class="tab"        onclick="switchTab('board')"    id="tab-board">Live Board</div>
+</div>
+
+<!-- SCREEN 1: REGISTER -->
+<div id="screen-register">
+  <p class="reg-title">Welcome 👋</p>
+  <p class="reg-sub">Tell us who you are so your ideas appear on the shared board with your sector colour.</p>
+  <label for="input-name">Your name</label>
+  <input type="text" id="input-name" placeholder="e.g. Amina Ibrahim" maxlength="60">
+  <div class="section-label">Your sector</div>
+  <div class="sector-grid">
+    <div class="sector-btn" data-sector="health"    onclick="selectSector(this)"><div class="dot"></div>Health</div>
+    <div class="sector-btn" data-sector="education" onclick="selectSector(this)"><div class="dot"></div>Education</div>
+    <div class="sector-btn" data-sector="agric"     onclick="selectSector(this)"><div class="dot"></div>Agric.</div>
+    <div class="sector-btn" data-sector="econ"      onclick="selectSector(this)"><div class="dot"></div>Econ. Incl.</div>
+    <div class="sector-btn" data-sector="other"     onclick="selectSector(this)" style="grid-column:span 2"><div class="dot"></div>Other / Cross-sector</div>
+  </div>
+  <button class="btn-primary" id="btn-register" onclick="register()" disabled>Continue to Add Ideas →</button>
+</div>
+
+<!-- SCREEN 2: SUBMIT IDEA -->
+<div id="screen-submit" class="hidden">
+  <div id="user-chip-submit" class="user-chip">
+    <div class="dot" id="chip-dot"></div>
+    <span id="chip-name"></span>
+    <span style="color:var(--muted);font-weight:400"> · change</span>
+  </div>
+
+  <div class="section-label">Choose a station</div>
+  <div class="topic-select">
+    <button class="topic-btn" data-topic="Tech Justice"              onclick="selectTopic(this)">⚖️ Tech Justice</button>
+    <button class="topic-btn" data-topic="Bias & Fairness"           onclick="selectTopic(this)">🔍 Bias &amp; Fairness</button>
+    <button class="topic-btn" data-topic="Privacy & Data Protection" onclick="selectTopic(this)">🔒 Privacy &amp; Data</button>
+    <button class="topic-btn" data-topic="Accountability & Redress"  onclick="selectTopic(this)">📋 Accountability</button>
+    <button class="topic-btn" data-topic="Digital Inclusion & Access" onclick="selectTopic(this)" style="grid-column:span 2">🌐 Digital Inclusion &amp; Access</button>
+  </div>
+
+  <!-- Topic context card -->
+  <div class="topic-context" id="topic-context">
+    <div class="tc-eyebrow"  id="tc-eyebrow"></div>
+    <div class="tc-heading">
+      <span class="tc-num"   id="tc-num"></span>
+      <span class="tc-title" id="tc-title"></span>
+    </div>
+    <hr class="tc-divider">
+    <div class="tc-q-label">The question we are exploring</div>
+    <div class="tc-question" id="tc-question"></div>
+    <div class="tc-probe-label">Probe points</div>
+    <ul class="tc-probes" id="tc-probes"></ul>
+  </div>
+
+  <label for="idea-text" style="margin-top:4px">Your idea or suggestion</label>
+  <textarea id="idea-text" placeholder="Share your idea, concern, or recommendation…" maxlength="280" oninput="updateChar()"></textarea>
+  <div class="char-count"><span id="char-num">0</span> / 280</div>
+  <button class="btn-primary" id="btn-submit" onclick="submitIdea()" disabled>Post to Board</button>
+</div>
+
+<!-- SCREEN 3: LIVE BOARD -->
+<div id="screen-board" class="hidden">
+  <div class="board-header">
+    <h2>Live Board</h2>
+    <div class="live-badge"><div class="live-dot"></div> Live</div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--health)"></div> Health</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--education)"></div> Education</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--agric)"></div> Agric.</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--econ)"></div> Econ. Incl.</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--other)"></div> Other</div>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-chip active" data-filter="all"                      onclick="setFilter(this)">All</button>
+    <button class="filter-chip" data-filter="Tech Justice"                    onclick="setFilter(this)"><div class="cdot" style="background:#6366F1"></div>Tech Justice</button>
+    <button class="filter-chip" data-filter="Bias & Fairness"                 onclick="setFilter(this)"><div class="cdot" style="background:#EC4899"></div>Bias</button>
+    <button class="filter-chip" data-filter="Privacy & Data Protection"       onclick="setFilter(this)"><div class="cdot" style="background:#0EA5E9"></div>Privacy</button>
+    <button class="filter-chip" data-filter="Accountability & Redress"        onclick="setFilter(this)"><div class="cdot" style="background:#10B981"></div>Accountability</button>
+    <button class="filter-chip" data-filter="Digital Inclusion & Access"      onclick="setFilter(this)"><div class="cdot" style="background:#F59E0B"></div>Inclusion</button>
+  </div>
+  <div class="ideas-count"><span id="ideas-total">0</span> ideas posted</div>
+  <div class="board-grid" id="board-grid"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-station">
+      <div class="modal-st-eyebrow" id="m-eyebrow"></div>
+      <div class="modal-st-row">
+        <span class="modal-st-num"   id="m-num"></span>
+        <span class="modal-st-title" id="m-title"></span>
+      </div>
+      <hr class="modal-st-divider">
+      <div class="modal-st-q" id="m-question"></div>
+    </div>
+    <div class="modal-idea">
+      <div class="modal-sector-pill" id="m-pill">
+        <div class="dot" id="m-pill-dot"></div>
+        <span id="m-pill-label"></span>
+      </div>
+      <div class="modal-author"    id="m-author"></div>
+      <div class="modal-idea-text" id="m-text"></div>
+      <div class="modal-time"      id="m-time"></div>
+      <button class="modal-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SECTORS = {
+  health:    { label:'Health',       color:'#F472B6', bg:'#FDF2F8' },
+  education: { label:'Education',    color:'#22D3EE', bg:'#ECFEFF' },
+  agric:     { label:'Agric.',       color:'#34D399', bg:'#ECFDF5' },
+  econ:      { label:'Econ. Incl.',  color:'#FCD34D', bg:'#FFFBEB' },
+  other:     { label:'Other/Cross',  color:'#FB923C', bg:'#FFF7ED' },
+};
+
+const TOPICS = {
+  'Tech Justice': {
+    num:'01', station:'Station 1',
+    question:'As AI spreads in Nigeria, who is gaining, who is being left behind or harmed, and whose knowledge and voice are missing from how these systems are built and governed?',
+    probes:[
+      'Distribution of benefits vs. harms: rural vs. urban, women vs. men, rich vs. poor, persons with disabilities',
+      'Reliance on imported models and foreign data. Do they reflect Nigerian realities, languages, and contexts?',
+      'Whose data and whose assumptions are these systems built on?',
+      'When AI causes harm, who can actually reach a remedy, and who cannot?',
+      'Which communities are never consulted before AI is deployed on them?',
+    ]
+  },
+  'Bias & Fairness': {
+    num:'02', station:'Station 2',
+    question:'Where are AI systems in Nigeria producing unfair, skewed or discriminatory outcomes, and why?',
+    probes:[
+      'Unrepresentative or poor-quality training data',
+      'Credit scoring and digital lending that quietly excludes the thin-file, the informal, and the rural',
+      'English-dominant tools that shut out non-English and indigenous-language speakers',
+      'Systems that disadvantage girls, persons with disabilities, displaced or rural populations',
+      'Identity, facial-recognition and profiling errors that fall hardest on some groups',
+    ]
+  },
+  'Privacy & Data Protection': {
+    num:'03', station:'Station 3',
+    question:'How well are Nigerians\u2019 data and privacy actually protected as AI systems collect and process more personal information?',
+    probes:[
+      'Is consent meaningful, or a checkbox no one reads or understands?',
+      'Sensitive data: patient records, learner data, farmers\u2019 data, financial and biometric data',
+      'Surveillance and function-creep: data collected for one purpose, used for another',
+      'Data ownership and sovereignty: who holds it, where is it stored, who profits?',
+      'Enforcement gap: does the law bite, and does anyone have capacity to enforce it?',
+    ]
+  },
+  'Accountability & Redress': {
+    num:'04', station:'Station 4',
+    question:'When an AI system gets it wrong or causes harm, who is answerable, and what can the affected person actually do?',
+    probes:[
+      'Automated decisions made with no explanation and no route of appeal',
+      'Fragmented oversight: which institution actually owns which harm?',
+      'Liability: the vendor, the deployer, the ministry. Who carries it?',
+      'Transparency: can anyone see how the decision was made?',
+      'Grievance and redress mechanisms: do they exist, and can people reach them?',
+    ]
+  },
+  'Digital Inclusion & Access': {
+    num:'05', station:'Station 5',
+    question:'What stops people and institutions from participating in and benefiting from AI, and where does that exclusion bite hardest?',
+    probes:[
+      'Connectivity, electricity, devices, affordability',
+      'Digital literacy and AI literacy: among citizens and inside MDAs',
+      'Language and disability accessibility',
+      'Regional disparities: North vs. South, urban vs. rural',
+      'Capacity gaps inside the very institutions expected to govern AI',
+    ]
+  },
+};
+
+const TOPIC_NAMES = Object.keys(TOPICS);
+
+let user = { name:'', sector:'' };
+let selectedTopic = '';
+let activeFilter = 'all';
+let ideas = JSON.parse(localStorage.getItem('aieg_ideas') || '[]');
+
+function switchTab(tab) {
+  ['register','submit','board'].forEach(t => {
+    document.getElementById('screen-'+t).classList.add('hidden');
+    document.getElementById('tab-'+t).classList.remove('active');
+  });
+  document.getElementById('screen-'+tab).classList.remove('hidden');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'board') renderBoard();
+}
+
+function selectSector(el) {
+  document.querySelectorAll('.sector-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  user.sector = el.dataset.sector;
+  checkRegister();
+}
+function checkRegister() {
+  const name = document.getElementById('input-name').value.trim();
+  document.getElementById('btn-register').disabled = !(name && user.sector);
+}
+document.getElementById('input-name').addEventListener('input', checkRegister);
+function register() {
+  user.name = document.getElementById('input-name').value.trim();
+  document.getElementById('chip-name').textContent = user.name + ' · ' + SECTORS[user.sector].label;
+  document.getElementById('chip-dot').style.background = SECTORS[user.sector].color;
+  document.getElementById('user-chip-submit').onclick = () => switchTab('register');
+  switchTab('submit');
+}
+
+function selectTopic(el) {
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTopic = el.dataset.topic;
+  renderContextCard(selectedTopic);
+  checkSubmit();
+}
+
+function renderContextCard(topicName) {
+  const t = TOPICS[topicName];
+  if (!t) return;
+  document.getElementById('tc-eyebrow').textContent  = t.station;
+  document.getElementById('tc-num').textContent      = t.num;
+  document.getElementById('tc-title').textContent    = topicName;
+  document.getElementById('tc-question').textContent = t.question;
+  const ul = document.getElementById('tc-probes');
+  ul.innerHTML = t.probes.map(p => '<li>' + p + '</li>').join('');
+  document.getElementById('topic-context').style.display = 'block';
+}
+
+function updateChar() {
+  document.getElementById('char-num').textContent = document.getElementById('idea-text').value.length;
+  checkSubmit();
+}
+function checkSubmit() {
+  const text = document.getElementById('idea-text').value.trim();
+  document.getElementById('btn-submit').disabled = !(selectedTopic && text.length > 3);
+}
+function submitIdea() {
+  const text = document.getElementById('idea-text').value.trim();
+  if (!text || !selectedTopic) return;
+  const idea = {
+    id: Date.now(), name: user.name, sector: user.sector,
+    topic: selectedTopic, text,
+    time: new Date().toLocaleTimeString('en-NG', { hour:'2-digit', minute:'2-digit' })
+  };
+  ideas.unshift(idea);
+  localStorage.setItem('aieg_ideas', JSON.stringify(ideas));
+  document.getElementById('idea-text').value = '';
+  document.getElementById('char-num').textContent = '0';
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('topic-context').style.display = 'none';
+  selectedTopic = '';
+  document.getElementById('btn-submit').disabled = true;
+  showToast('✅ Idea posted to the board!');
+  setTimeout(() => switchTab('board'), 700);
+}
+
+function setFilter(el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeFilter = el.dataset.filter;
+  renderBoard();
+}
+function renderBoard() {
+  const filtered = activeFilter === 'all' ? ideas : ideas.filter(i => i.topic === activeFilter);
+  document.getElementById('ideas-total').textContent = ideas.length;
+  const grid = document.getElementById('board-grid');
+  grid.innerHTML = '';
+  TOPIC_NAMES.forEach(topic => {
+    const topicIdeas = filtered.filter(i => i.topic === topic);
+    const col = document.createElement('div');
+    col.className = 'topic-col';
+    col.innerHTML = '<div class="topic-col-header">' + TOPICS[topic].num + ' · ' + topic + '</div><div class="topic-col-body"></div>';
+    grid.appendChild(col);
+    const body = col.querySelector('.topic-col-body');
+    if (!topicIdeas.length) {
+      body.innerHTML = '<div class="empty-col">No ideas yet</div>';
+    } else {
+      topicIdeas.forEach(idea => {
+        const s = document.createElement('div');
+        s.className = 'sticky';
+        s.dataset.sector = idea.sector;
+        const preview = idea.text.length > 80 ? idea.text.slice(0,80) + '…' : idea.text;
+        s.innerHTML = preview + '<div class="sticky-meta">' + idea.name + ' · ' + SECTORS[idea.sector].label + '</div>';
+        s.onclick = () => openModal(idea);
+        body.appendChild(s);
+      });
+    }
+  });
+}
+
+function openModal(idea) {
+  const t   = TOPICS[idea.topic];
+  const sec = SECTORS[idea.sector];
+  document.getElementById('m-eyebrow').textContent  = t.station;
+  document.getElementById('m-num').textContent      = t.num;
+  document.getElementById('m-title').textContent    = idea.topic;
+  document.getElementById('m-question').textContent = t.question;
+  const pill = document.getElementById('m-pill');
+  pill.style.background = sec.bg;
+  document.getElementById('m-pill-dot').style.background = sec.color;
+  document.getElementById('m-pill-label').textContent    = sec.label;
+  document.getElementById('m-author').textContent = idea.name;
+  document.getElementById('m-text').textContent   = idea.text;
+  document.getElementById('m-time').textContent   = 'Posted at ' + idea.time;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal') || e.currentTarget.tagName === 'BUTTON') {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+renderBoard();
+</script>
+</body>
+</html>
